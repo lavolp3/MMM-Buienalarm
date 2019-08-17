@@ -1,16 +1,16 @@
 # MMM-rain-forecast
-A <a href="https://github.com/MichMich/MagicMirror">MagicMirror</a> module forecast rain in the Netherlands.
+A <a href="https://github.com/MichMich/MagicMirror">MagicMirror</a> module forecast rain in the Netherlands and western Germany.
 
-This module is originally made by Cirdan, many thanks for his great work.
-I had to adapt because the sparkline did not work on my Mirror.
+This module is originally made by Cirdan and Spoturdeal, many thanks for their great work!
+I wanted to make it bigger and more prominent on the mirror since it
+I also tried to have it look a bit more liek the buienalarm Android App.
 
-I have removed the sparkline and replaced it by a real fast Scalable Vector Graphic
-the Module has no more dependency on jQuery or Sparkline.
+The module now uses chart.js for the chart and colored segments to show the intensity of rain.
 
 
 ## Installation
 1. Navigate into your MagicMirror's `modules` folder and execute `git clone https://github.com/spoturdeal/MMM-rain-forecast.git`.
-2. Add the module inside `config.js` placing it where you prefer 
+2. Add the module inside `config.js` placing it where you prefer
 
 
 ## Config
@@ -29,13 +29,12 @@ Here is an example of an entry in `config.js`
 {
 	module: "MMM-rain-forecast",
 	position: "top_right",   // see mirror setting for options
-	header: "Expected rainfall", 
+	header: "Expected rainfall",
 	config: {   
-                lat: 52.15,
-                lon: 5.5,				
+    lat: 52.15,
+    lon: 5.5,				
 		pleaseWait: "Please wait",
 		noRainText: "Until %s no rain",
-		fillColour: '#0074d9'   // This is a blue color you can also use blue, cyan etc
 	}
 }
 ```
@@ -46,7 +45,7 @@ There is no language file because only 3 text labels are used and every-one can 
 #### Display type: details
 ![Screenshot of detail mode](/logoNorain.png?raw=true "No rain")
 
-#### Display type: details 
+#### Display type: details
 ![Screenshot of detail mode](/logoRain.png?raw=true "Predicted rain")
 
 
@@ -56,7 +55,8 @@ Data provided by <a href="https://www.buienradar.nl/">Buienradar</a>.
 
 ## Contributors
 
-<a href="https://github.com/73cirdan/MMM-rainfc">Cirdan</a> For the fantastic base of this module.
+<a href="https://github.com/73cirdan/MMM-rainfc">Cirdan</a> and <a href="https://github.com/Spoturdeal/MMM-rain-forecast">Spoturdeal</a> for the groundwork for this module.
+.
 
 ## Version
 
@@ -68,7 +68,7 @@ Data provided by <a href="https://www.buienradar.nl/">Buienradar</a>.
 The MIT License (MIT)
 =====================
 
-Copyright © 2018 SpoturDeal - Carl 
+Copyright © 2019 lavolp3
 
 Permission is hereby granted, free of charge, to any person
 obtaining a copy of this software and associated documentation

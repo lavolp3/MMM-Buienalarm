@@ -1,0 +1,29 @@
+{
+  "name": "mmm-rain-forecast",
+  "version": "1.0.0",
+  "description": "Rain Forecast for Netherlands and vicinity using the buienradar.nl API",
+  "main": "MMM-rain-forecast.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lavolp3/MMM-rain-forecast.git"
+  },
+  "keywords": [
+    "rain",
+    "forecast",
+    "Magic Mirror",
+    "rain-forecast"
+  ],
+  "author": "lavolp3",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/lavolp3/MMM-rain-forecast/issues"
+  },
+  "homepage": "https://github.com/lavolp3/MMM-rain-forecast#readme",
+  "dependencies": {
+    "chart.js": "^2.7.3",
+    "chartjs-lines-plugin": "^1.0.3"
+  }
+}

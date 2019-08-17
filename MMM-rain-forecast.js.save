@@ -1,0 +1,210 @@
+/* global Module */
+
+/* Magic Mirror
+ * Module: Rain-forecast
+ * Version 29th April 2018 decreased by request the width of the graph by 25% was 400px now 305px
+ * Displays a scalable vector graph of expected rain for a lon/lat pair based on a Dutch public Api (Buienradar)
+ *  https://gpsgadget.buienradar.nl/data/raintext?lat=52.15&lon=5.5
+ * By Spoturdeal.
+ */
+//var Chart = require("chart.js")
+
+Module.register("MMM-rain-forecast",{
+  // Default module config.
+	defaults: {
+		lat: 52.15,
+		lon: 5.5,
+		noRainText: 'Until %s no rain',    // write %s where you like to add the time example Until 17:15 no rain
+		pleaseWait: 'Please wait',
+		fillColour: '#00ffff'
+	},
+  // Override start method.
+
+	start: function() {
+		Log.log("Starting module: " + this.name);
+		this.payload = false;
+		this.sendSocketNotification("RAIN_REQUEST", {
+			updateInterval: 60000,
+			apiBase: "https://gpsgadget.buienradar.nl",
+			endpoint: "data/raintext",
+			lat: this.config.lat,
+			lon: this.config.lon,
+		});
+	},
+	// Define required scripts. No extra scripts needed
+	getScripts: function() {
+		return [
+			'modules/MMM-rain-forecast/node_modules/chart.js/dist/Chart.bundle.js',
+			'modules/MMM-rain-forecast/node_modules/chartjs-lines-plugin/dist/chartjs-lines-plugin.js'
+		];
+	},
+	// Define required styles for chart only.
+	getStyles: function() {
+		return ["MMM-rain-forecast.css"];
+	},
+	socketNotificationReceived: function(notification, payload) {
+		// was not able to receive data
+        	if (notification == "ERROR") {
+			document.getElementById("rainWrapper").innerHTML=payload.error;
+			return;
+		}
+        // no data received from node_helper.js
+        if (!payload.times || payload.times.length == 0) {
+            document.getElementById("rainGraph").innerHTML="No Data";
+            return;
+        }
+        // no rain calculated from in node_helper.js
+            if (payload.expectRain == 0) {
+                noRainText = this.sprintf(this.config.noRainText,payload.times[payload.times.length-1]);
+                console.log("[MMM-rain-forecast] No rain expected in 2hrs!");
+                //document.getElementById("wrapper").innerHTML = noRainText
+                var canvas = document.getElementById("rainGraph");
+		var ctx = canvas.getContext("2d");
+		ctx.font = "20px Arial";
+		ctx.fillText("noRainText, 10, 10);
+            } else {
+                console.log("Succesfully loaded rain data, drawing chart!");
+                this.drawChart(payload.rainDrops,payload.times);
+                //document.getElementById('sparkler').innerHTML = this.makeSVG(payload.rainDrops,payload.times)
+            }
+        },
+
+	// Override dom generator.
+	getDom: function() {
+		var wrapper = document.createElement("div");
+		wrapper.className = "rainWrapper";
+		var graph = document.createElement("canvas");
+		graph.className = "small thin light";
+		graph.id = "rainGraph";
+		graph.width = "400px";
+		graph.height = "500px";
+		wrapper.appendChild(graph);
+		return wrapper;
+	},
+    // Make the graphic using SVG
+    makeSVG: function(raining,times){
+        /* We start at position
+         * The table is upside down therefor we calculate the line position down from the top of the canvas
+         * received value 77 = 100 - 38 = 72 on the canvas
+         * M01,200 is the start
+         */
+        var setPoints='M01,200';
+        // loop through the received data array raining[] normally 24 position 0 to 23
+        var xAs=1;
+        for (i=0;i<raining.length;i++){
+            xAs=(xAs==1?xAs=2:xAs+13);
+            setPoints += ', L' + xAs + ',' + (200-2*raining[i]);
+        }
+        // End of th3 line make sure it drops to the bottom of the canvas to avoid silly fill
+        setPoints +=', L' + xAs + ',200 Z';
+        var svg='<svg class="graph" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://www.w3.org/2000/svg">';
+        //Set grid lines xAs ans yAs size is determined in CSS
+        svg+='<g class="grid x-grid" id="xGrid"><line x1="1" x2="1" y1="00" y2="200"></line></g>';
+        svg+='<g class="grid y-grid" id="yGrid"><line x1="1" x2="350" y1="200" y2="200"></line></g>';
+        //Draw the line with the data
+        svg+='<g class="surfaces">';
+        svg+='<path class="first_set" style="fill:' + this.config.fillColour + '" d="' + setPoints + '"></path>';
+        svg+='</g>';
+        // Set the class for the grid
+        svg+='<use class="grid double" xlink:href="#xGrid" style=""></use><use class="grid double" xlink:href="#yGrid" style=""></use>';
+        // Time labels
+        svg+='<g class="labels x-labels">';
+        svg+='<text x="20" y="115"  fill="white">' + times[1] + '</text>';
+        svg+='<text x="73" y="115"  fill="white">' + times[5]+ '</text>';
+        svg+='<text x="126" y="115" fill="white">' + times[9]+ '</text>';
+        svg+='<text x="179" y="115" fill="white">' + times[13] + '</text>';
+        svg+='<text x="232" y="115" fill="white">' + times[17] + '</text>';
+        svg+='<text x="285" y="115" fill="white">' + times[21] + '</text>';
+        svg+='</g></svg>';
+        return svg;
+    },
+
+    drawChart: function(raining, times) {
+	//console.log(times, raining)
+	var ctx = document.getElementById("rainGraph").getContext("2d");
+	Chart.defaults.global.defaultFontSize = 20;
+	var gradient = ctx.createLinearGradient(0, 0, 0, 400);
+	gradient.addColorStop(1, "rgba(140,170,250,1)");
+	gradient.addColorStop(0, "rgba(0,0,70,1)");
+	var rainChart = new Chart(ctx, {
+		type: 'line',
+ 		data: {
+			labels: times,
+			datasets: [{
+				//label: "rain",
+				data: raining,
+				backgroundColor: gradient, //'blue',
+				borderWidth: 1,
+			  	pointRadius: 0,
+				fill: 'origin'
+			}],
+		},
+		options: {
+			animation: {
+				duration: 0,
+			},
+			scales: {
+				yAxes: [{
+					display: false,
+					ticks: {
+						suggestedMin: 10,
+					}
+				}],
+				xAxes: [{
+					ticks: {
+						fontColor: '#DDD',
+						fontSize: 16,
+						maxTicksLimit: 7,
+					}
+				}]
+			},
+			"horizontalLine": [{
+				"y": 2,
+				"style": "rgba(255, 255, 255, 1)",
+				"text": "Leicht",
+				"textPosition": 0
+			},{
+				"y": 4,
+				"style": "rgba(255, 255, 255, 1)",
+				"text": "Mittel",
+				"textPosition": 200
+			},{
+				"y": 7,
+				"style": "rgba(255, 255, 255, 1)",
+				"text": "Schwer",
+				"textPosition": 400
+			}],
+			legend: { display: false, },
+			borderColor: 'white',
+			borderWidth: 1,
+			cubicInterpolationMode: "default",
+		}
+	})
+    },
+
+    sprintf: function() {
+    var args = arguments,
+    string = args[0],
+    i = 1;
+    return string.replace(/%((%)|s|d)/g, function (m) {
+        // m is the matched format, e.g. %s, %d
+        var val = null;
+        if (m[2]) {
+            val = m[2];
+        } else {
+            val = args[i];
+            // A switch statement so that the formatter can be extended. Default is %s
+            switch (m) {
+                case '%d':
+                    val = parseFloat(val);
+                    if (isNaN(val)) {
+                        val = 0;
+                    }
+                    break;
+            }
+            i++;
+        }
+        return val;
+    });
+}
+});

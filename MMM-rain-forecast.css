@@ -39,3 +39,9 @@
 .MMM-rain-forecast svg.graph .labels.y-labels {
   text-anchor: end;
 }
+
+.MMM-rain-forecast .rainWrapper {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
