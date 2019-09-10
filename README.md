@@ -58,11 +58,7 @@ Data provided by <a href="https://www.buienradar.nl/">Buienradar</a>.
 <a href="https://github.com/73cirdan/MMM-rainfc">Cirdan</a> and <a href="https://github.com/Spoturdeal/MMM-rain-forecast">Spoturdeal</a> for the groundwork for this module.
 .
 
-## Version
 
-2.2 New URL because Buienradar changed on March 27th, 2018
-
-2.1 New graphic fixed color and time labels are now a part of the graphic and added sprintf function to write no rain texts more flexible in different languages.
 
 
 The MIT License (MIT)
