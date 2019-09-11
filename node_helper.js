@@ -1,5 +1,7 @@
 var NodeHelper = require('node_helper');
 var request = require('request');
+var moment = require('moment');
+
 
 module.exports = NodeHelper.create({
   // Override start method.
@@ -57,15 +59,13 @@ module.exports = NodeHelper.create({
     for(var i = 0; i < lines.length-1; i++){
       var values = lines[i].split('|');
       // split rain from time
-      rainDrops.push(values[0]=="NaN"?0:(Math.pow(10,(parseInt(values[0])-109)/32)) * 10);
-      times.push(values[1]);
+      rainDrops.push(values[0] == "NaN" ? 0 : (Math.pow(10,(parseInt(values[0])-109)/32)));
+      times.push((i == 0) ? moment(values[1],"HH:mm").format() : moment(times[0]).add(i*5, "minutes").format());
       expectedRain += parseInt(values[0]);
       if ((parseInt(values[0]) > 0.1) && (rainCount == 0)) {
-        console.log("Start "+values[1]);
         startRain = values[1];
         rainCount = 1;
       } else if ((parseInt(values[0]) < 0.1) && (rainCount == 1)) {
-        console.log("End "+values[1]);
         endRain = values[1];
         rainCount = 2;
       }
@@ -73,6 +73,7 @@ module.exports = NodeHelper.create({
         endRain = times[lines.length-1];
       }
     }
+    console.log(times);
 
     // Send all to script
     self.sendSocketNotification('RAIN_DATA', {

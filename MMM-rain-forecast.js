@@ -12,8 +12,6 @@ Module.register("MMM-rain-forecast",{
   defaults: {
     lat: 52.15,
     lon: 5.5,
-    noRainText: 'Kein Regen bis ',    // write where you like to add the time example Until 17:15 no rain
-    pleaseWait: 'Lade...',
     width: "500",
     height: "400"
   },
@@ -44,7 +42,13 @@ Module.register("MMM-rain-forecast",{
     return ["MMM-rain-forecast.css"];
   },
 
-
+  getTranslations: function() {
+      return {
+          en: "translations/en.json",
+          nl: "translations/nl.json",
+          de: "translations/de.json"
+      };
+  },
 
   socketNotificationReceived: function(notification, payload) {
     var msg = document.getElementById("msg");
@@ -55,7 +59,7 @@ Module.register("MMM-rain-forecast",{
     } else if (notification == "RAIN_DATA") {
       // no data received from node_helper.js
       if (!payload.times || payload.times.length == 0) {
-        msg.innerHTML="No Data";
+        msg.innerHTML=this.translate("NORAIN");
         return;
       } else if (payload.expectRain == 0) {
         //no rain calculated in node_helper.js
@@ -65,7 +69,7 @@ Module.register("MMM-rain-forecast",{
         canvas.style.display = "none";
       } else {
         if (payload.startRain) {
-          msg.innerHTML = "Regen startet um "+payload.startRain+" und endet um "+payload.endRain;
+          msg.innerHTML = this.translate("RAIN_STARTS") + payload.startRain + this.translate("RAIN_ENDS") + payload.endRain;
         } else {
           msg.innerHTML = "";
         }
@@ -82,7 +86,7 @@ Module.register("MMM-rain-forecast",{
     msgWrapper.id = "msg";
     msgWrapper.className = "small bright";
     wrapper.appendChild(msgWrapper);
-    msgWrapper.innerHTML = this.config.pleaseWait;
+    msgWrapper.innerHTML = this.translate("LOADING");
     var graph = document.createElement("canvas");
     graph.className = "small thin light";
     graph.id = "rainGraph";
@@ -143,7 +147,7 @@ Module.register("MMM-rain-forecast",{
             time: {
               unit: 'hour',
               unitStepSize: 0.5,
-              parser: "HH:mm",
+              //parser: "HH:mm",
               displayFormats: {
                 hour: 'HH:mm'
               },
