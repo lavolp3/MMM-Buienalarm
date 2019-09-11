@@ -33,7 +33,6 @@ Module.register("MMM-Buienalarm",{
   getScripts: function() {
     return [
       'modules/MMM-Buienalarm/node_modules/chart.js/dist/Chart.bundle.js',
-      'modules/MMM-Buienalarm/node_modules/chartjs-lines-plugin/dist/chartjs-lines-plugin.js'
     ];
   },
 
