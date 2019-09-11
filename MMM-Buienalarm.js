@@ -7,7 +7,7 @@
  * By lavolp3, based on the work of Spoturdeal's MMM-rain-forecast.
  */
 
-Module.register("MMM-rain-forecast",{
+Module.register("MMM-Buienalarm",{
   // Default module config.
   defaults: {
     lat: 52.15,
@@ -21,7 +21,7 @@ Module.register("MMM-rain-forecast",{
     console.log("Starting module: " + this.name);
     this.payload = false;
     this.sendSocketNotification("RAIN_REQUEST", {
-      updateInterval: 30 * 1000,
+      updateInterval: 60 * 1000,
       apiBase: "https://gpsgadget.buienradar.nl",
       endpoint: "data/raintext",
       lat: this.config.lat,
@@ -32,14 +32,14 @@ Module.register("MMM-rain-forecast",{
   // Define required scripts. Chart.js needed for the graph.
   getScripts: function() {
     return [
-      'modules/MMM-rain-forecast/node_modules/chart.js/dist/Chart.bundle.js',
-      'modules/MMM-rain-forecast/node_modules/chartjs-lines-plugin/dist/chartjs-lines-plugin.js'
+      'modules/MMM-Buienalarm/node_modules/chart.js/dist/Chart.bundle.js',
+      'modules/MMM-Buienalarm/node_modules/chartjs-lines-plugin/dist/chartjs-lines-plugin.js'
     ];
   },
 
   // Define required styles.
   getStyles: function() {
-    return ["MMM-rain-forecast.css"];
+    return ["MMM-Buienalarm.css"];
   },
 
   getTranslations: function() {
@@ -183,33 +183,6 @@ Module.register("MMM-rain-forecast",{
         borderWidth: 1,
         cubicInterpolationMode: "default",
       }
-    });
-  },
-
-
-  sprintf: function() {
-    var args = arguments,
-    string = args[0],
-    i = 1;
-    return string.replace(/%((%)|s|d)/g, function (m) {
-      // m is the matched format, e.g. %s, %d
-      var val = null;
-      if (m[2]) {
-        val = m[2];
-      } else {
-        val = args[i];
-        // A switch statement so that the formatter can be extended. Default is %s
-        switch (m) {
-          case '%d':
-            val = parseFloat(val);
-            if (isNaN(val)) {
-              val = 0;
-            }
-            break;
-        }
-        i++;
-      }
-      return val;
     });
   },
 });
