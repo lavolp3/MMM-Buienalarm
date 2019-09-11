@@ -5,7 +5,7 @@ This module is based on MMM-rainfc by Cirdan and MMM-rain-forecast by Spoturdeal
 I wanted to make it bigger and more prominent on the mirror and use a chartjs graph because of their great library
 I also tried to have it look a bit more like the buienalarm Android App.
 
-The module now uses chart.js for the chart and a gradinet fill to show intensity of the rain.
+The module now uses chart.js for the chart and a gradient fill to show intensity of the rain.
 
 
 ## Installation
