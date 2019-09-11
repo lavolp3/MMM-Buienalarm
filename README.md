@@ -9,8 +9,8 @@ The module now uses chart.js for the chart and a gradient fill to show intensity
 
 
 ## Installation
-1. Navigate into your MagicMirror's `modules` folder and execute `git clone https://github.com/spoturdeal/MMM-rain-forecast.git`.
-2. Add the module inside `config.js` placing it where you prefer
+1. Navigate into your MagicMirror's `modules` folder and execute `git clone https://github.com/lavolp3/MMM-Buienalarm.git`.
+2. Add the module in `config.js` placing it where you prefer
 
 
 ## Config options
