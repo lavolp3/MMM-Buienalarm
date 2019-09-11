@@ -1,29 +1,22 @@
 {
-  "name": "mmm-rain-forecast",
+  "name": "mmm-buienalarm",
   "version": "1.0.0",
-  "description": "Rain Forecast for Netherlands and vicinity using the buienradar.nl API",
-  "main": "MMM-rain-forecast.js",
+  "description": "A <a href=\"https://github.com/MichMich/MagicMirror\">MagicMirror</a> module forecasting rain in the Netherlands and western Germany.",
+  "main": "MMM-Buienalarm.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/lavolp3/MMM-rain-forecast.git"
+    "url": "git+https://github.com/lavolp3/MMM-Buienalarm.git"
   },
-  "keywords": [
-    "rain",
-    "forecast",
-    "Magic Mirror",
-    "rain-forecast"
-  ],
-  "author": "lavolp3",
-  "license": "ISC",
+  "author": "Dirk Kovert",
+  "license": "MIT",
   "bugs": {
-    "url": "https://github.com/lavolp3/MMM-rain-forecast/issues"
+    "url": "https://github.com/lavolp3/MMM-Buienalarm/issues"
   },
-  "homepage": "https://github.com/lavolp3/MMM-rain-forecast#readme",
+  "homepage": "https://github.com/lavolp3/MMM-Buienalarm#readme",
   "dependencies": {
-    "chart.js": "^2.7.3",
-    "chartjs-lines-plugin": "^1.0.3",
+    "chart.js": "^2.8.0"
   }
 }
