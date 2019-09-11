@@ -21,7 +21,7 @@ Module.register("MMM-Buienalarm",{
     console.log("Starting module: " + this.name);
     this.payload = false;
     this.sendSocketNotification("RAIN_REQUEST", {
-      updateInterval: 60 * 1000,
+      updateInterval: 5 * 60 * 1000,
       apiBase: "https://gpsgadget.buienradar.nl",
       endpoint: "data/raintext",
       lat: this.config.lat,
