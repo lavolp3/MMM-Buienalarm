@@ -58,17 +58,27 @@ Module.register("MMM-Buienalarm",{
     } else if (notification == "RAIN_DATA") {
       // no data received from node_helper.js
       if (!payload.times || payload.times.length == 0) {
-        msg.innerHTML=this.translate("NORAIN");
+        msg.innerHTML = this.translate("NODATA");
         return;
       } else if (payload.expectRain == 0) {
         //no rain calculated in node_helper.js
-        console.log(payload.times[payload.times.length-1]);
-        msg.innerHTML = this.config.noRainText + payload.times[payload.times.length-1];
+        msg.innerHTML = this.translate("NORAIN") + moment(payload.times[payload.times.length-1]).format("HH:mm");
         var canvas = document.getElementById("rainGraph");
         canvas.style.display = "none";
       } else {
-        if (payload.startRain) {
-          msg.innerHTML = this.translate("RAIN_STARTS") + payload.startRain + this.translate("RAIN_ENDS") + payload.endRain;
+        var rain = this.translate("RAIN")+" ",
+            starts_at = this.translate("STARTS_AT")+" ",
+            and = this.translate("AND")+" ",
+            ends_at = this.translate("ENDS_AT");
+
+        msg.innerhtml = rain;
+        if (payload.startRain && payload.startRain > moment().format()) {
+          msg.innerHTML += starts_at + moment(payload.startRain).format("HH:mm");
+          if (payload.endRain && payload.endRain > moment().format()) {
+            msg.innerHTML += and + ends_at + moment(payload.startRain).format("HH:mm");
+          }
+        } else if (payload.startRain && payload.startRain < moment()) {
+          msg.innerHTML += ends_at + moment(payload.endRain).format("HH:mm");
         } else {
           msg.innerHTML = "";
         }
@@ -136,9 +146,10 @@ Module.register("MMM-Buienalarm",{
         },
         scales: {
           yAxes: [{
-            display: false,
+            display: true,
             ticks: {
-              suggestedMin: 10,
+              suggestedMax: 2,
+              display: false,
             }
           }],
           xAxes: [{

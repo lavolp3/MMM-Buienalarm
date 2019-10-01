@@ -53,8 +53,8 @@ module.exports = NodeHelper.create({
         // Count all rain together
     var expectedRain = 0;
     var rainCount = 0;    //bad programming ahead!!!
-    var startRain, endRain;
-        // Make seprate lines
+    var startRain, endRain = 0;
+        // Make separate lines
     var lines = body.split('\n');
     for(var i = 0; i < lines.length-1; i++){
       var values = lines[i].split('|');
@@ -63,17 +63,17 @@ module.exports = NodeHelper.create({
       times.push((i == 0) ? moment(values[1],"HH:mm").format() : moment(times[0]).add(i*5, "minutes").format());
       expectedRain += parseInt(values[0]);
       if ((parseInt(values[0]) > 0.1) && (rainCount == 0)) {
-        startRain = values[1];
+        startRain = times[i];
         rainCount = 1;
       } else if ((parseInt(values[0]) < 0.1) && (rainCount == 1)) {
-        endRain = values[1];
+        endRain = times[i];
         rainCount = 2;
       }
-      if (!endRain) {
-        endRain = times[lines.length-1];
-      }
     }
-    
+    if (rainCount == 1) {
+      endRain = times[lines.length-1];
+    }
+
     // Send all to script
     self.sendSocketNotification('RAIN_DATA', {
       rainDrops:  rainDrops,

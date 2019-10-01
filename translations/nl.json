@@ -1,6 +1,10 @@
 {
   "LOADING": "Laden....",
   "NORAIN": "No rain expected until ",
-  "RAIN_STARTS": "Regen begint om ",
-  "RAIN_ENDS": " en eindigt om "
+
+  "RAIN": "Regen ",
+  "STARTS_AT": "begint om ",
+  "AND": "en ",
+  "ENDS_AT": "eindigt om ",
+  "NODATA": "Geen gegevens!"
 }
