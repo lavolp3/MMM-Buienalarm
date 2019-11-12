@@ -2,15 +2,16 @@
 A <a href="https://github.com/MichMich/MagicMirror">MagicMirror</a> module forecasting rain in the Netherlands and western Germany.
 
 This module is based on MMM-rainfc by Cirdan and MMM-rain-forecast by Spoturdeal, many thanks for their great work!
-I wanted to make it bigger and more prominent on the mirror and use a chartjs graph because of their great library
-I also tried to have it look a bit more like the buienalarm Android App.
+I wanted to make it bigger and more prominent on the mirror and use a chartjs graph because of their great library.
+I also tried to have it look a bit more like the Buienalarm Android App.
 
 The module now uses chart.js for the chart and a gradient fill to show intensity of the rain.
 
 
 ## Installation
 1. Navigate into your MagicMirror's `modules` folder and execute `git clone https://github.com/lavolp3/MMM-Buienalarm.git`.
-2. Add the module in `config.js` placing it where you prefer
+2. Navigate into the module folder and install npm dependencies: `cd MMM-Buienalarm && npm install`
+3. Add the module in `config.js` placing it where you prefer
 
 
 ## Config options
@@ -27,15 +28,15 @@ The module now uses chart.js for the chart and a gradient fill to show intensity
 Here is an example of an entry in `config.js`
 ```
 {
-	module: "MMM-Buienalarm",
-	position: "top_right",   // see mirror setting for options
-	header: "Buienalarm",
-	config: {   
-    lat: 52.15,
-    lon: 5.55,
-    width: "500",
-    height: "400"
-	}
+    module: "MMM-Buienalarm",
+    position: "top_right",   // see mirror setting for options
+    header: "Buienalarm",
+    config: {   
+        lat: 52.15,
+        lon: 5.55,
+        width: "500",
+        height: "400"
+    }
 }
 ```
 
@@ -53,8 +54,7 @@ Data provided by <a href="https://www.buienradar.nl/">Buienradar</a>.
 
 ## Contributors
 
-<a href="https://github.com/73cirdan/MMM-rainfc">Cirdan</a> and <a href="https://github.com/Spoturdeal/MMM-rain-forecast">Spoturdeal</a> for the groundwork for this module.
-.
+<a href="https://github.com/73cirdan/MMM-rainfc">Cirdan</a> and <a href="https://github.com/Spoturdeal/MMM-rain-forecast">Spoturdeal</a> have laid the groundwork for this module.
 
 
 
