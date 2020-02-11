@@ -19,8 +19,8 @@ Module.register("MMM-Buienalarm",{
     apiBase: "https://gpsgadget.buienradar.nl",
     endpoint: "data/raintext",
     updateInterval: 5 * 60 * 1000,
-    chartType: 'bar',
-    debug: true
+    chartType: 'line',
+    debug: false
   },
 
   msg: "LOADING",
@@ -67,7 +67,8 @@ Module.register("MMM-Buienalarm",{
       payload.maxRain = [1,2];*/
 
       // no data received from node_helper.js
-      if (!payload.times || payload.times.length == 0) {
+      if (!payload.times || payload.times.length === 0) {
+        this.log(payload);
         this.msg = this.translate("NODATA");
       } else if (payload.completeRain < 0.01) {
         //no rain calculated in node_helper.js
@@ -126,14 +127,12 @@ Module.register("MMM-Buienalarm",{
     iconWrapper.id = "iconWrapper";
     iconWrapper.style.width = this.config.width+"px";
     iconWrapper.style.height = this.config.height+"px";
-    this.log("IconWrapper: "+iconWrapper.style);
     var iconPath = "url('" + this.file("icons/rain_light.svg") + "')";
     var lightRain = document.createElement("div");
     lightRain.className = "rainSVG";
     lightRain.id = "lightRain";
     lightRain.style.height = this.config.iconHeight+"px";
     lightRain.style.background = iconPath + " no-repeat";
-    this.log("Background: "+lightRain.style.background);
     lightRain.style.display = "none";
     iconPath = "url('" + this.file("icons/rain_medium.svg") + "')";
     var medRain = document.createElement("div");

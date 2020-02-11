@@ -23,7 +23,7 @@ The module now uses chart.js for the chart and a gradient fill to show intensity
 |`width`|Width of the graph<br>**Type:** `String`<br>**Default:** <i>"500"</i>|
 |`height`|Height of the graph<br>**Type:** `String`<br>**Default:** <i>"400"</i>|
 |`iconHeight`|Height of the weather icons<br>**Type:** `Integer`<br>**Default:** <i>40</i>|
-|`chartType`|Determines type of the chart<br>**Type:** `string`<br>**Values:** "line", "bar"<br>**Default:** <i>"line"</i>|
+|`chartType`|Determines type of the chart<br>**Type:** `string`<br>**Values:** 'line', 'bar'<br>**Default:** <i>"line"</i>|
 |`debug`|Debug mode (increased console output)<br>**Type:** `boolean`<br>**Default:** <i>false</i>|
 
 
@@ -38,17 +38,14 @@ Here is an example of an entry in `config.js`
         lat: 52.15,
         lon: 5.55,
         width: "500",
-        height: "400"
+        height: "400",
+        chartType: "bar",
     }
 }
 ```
 
-## Screenshots (to  be updated!)
-#### Display type: details
-![Screenshot of detail mode](/logoNorain.png?raw=true "No rain")
-
-#### Display type: details
-![Screenshot of detail mode](/logoRain.png?raw=true "Predicted rain")
+## Screenshot
+![Screenshot](/rainImage.png?raw=true "Predicted rain")
 
 
 ## Notes
