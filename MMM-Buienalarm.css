@@ -1,5 +1,19 @@
-.MMM-rain-forecast .rainWrapper {
+.MMM-Buienalarm .rainWrapper {
   display: block;
   margin-left: auto;
   margin-right: auto;
+  position: relative;
+}
+
+.MMM-Buienalarm #iconWrapper {
+  position: absolute;
+  float: left;
+  overflow: hidden;
+}
+
+.MMM-Buienalarm .rainSVG {
+  position: absolute;
+  filter: invert(100%);
+  border-bottom: #444 solid 2px;
+  width: 100%;
 }

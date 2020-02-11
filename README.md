@@ -22,6 +22,9 @@ The module now uses chart.js for the chart and a gradient fill to show intensity
 |`lon`|The longitude of your position.<br>**Type:** `Float`<br>**Default:** <i>5.55</i>|
 |`width`|Width of the graph<br>**Type:** `String`<br>**Default:** <i>"500"</i>|
 |`height`|Height of the graph<br>**Type:** `String`<br>**Default:** <i>"400"</i>|
+|`iconHeight`|Height of the weather icons<br>**Type:** `Integer`<br>**Default:** <i>40</i>|
+|`chartType`|Determines type of the chart<br>**Type:** `string`<br>**Values:** "line", "bar"<br>**Default:** <i>"line"</i>|
+|`debug`|Debug mode (increased console output)<br>**Type:** `boolean`<br>**Default:** <i>false</i>|
 
 
 
@@ -31,7 +34,7 @@ Here is an example of an entry in `config.js`
     module: "MMM-Buienalarm",
     position: "top_right",   // see mirror setting for options
     header: "Buienalarm",
-    config: {   
+    config: {
         lat: 52.15,
         lon: 5.55,
         width: "500",
