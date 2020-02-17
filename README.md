@@ -41,7 +41,7 @@ Here is an example of an entry in `config.js`
         height: "400",
         chartType: "bar",
     }
-}
+},
 ```
 
 ## Screenshot
