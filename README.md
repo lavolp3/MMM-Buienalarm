@@ -45,7 +45,7 @@ Here is an example of an entry in `config.js`
 ```
 
 ## Screenshot
-![Screenshot](/rainImage.png?raw=true "Predicted rain")
+![Screenshot](/rainImage.PNG?raw=true "Predicted rain")
 
 
 ## Notes
