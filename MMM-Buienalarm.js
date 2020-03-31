@@ -19,8 +19,9 @@ Module.register("MMM-Buienalarm",{
     apiBase: "https://gpsgadget.buienradar.nl",
     endpoint: "data/raintext",
     updateInterval: 5 * 60 * 1000,
-    chartType: 'bar',
-    debug: true
+    chartType: 'line',
+    chartFillColor: 'rgba(65, 105, 220, 1)',
+    debug: false
   },
 
   msg: "LOADING",
@@ -67,15 +68,20 @@ Module.register("MMM-Buienalarm",{
       payload.maxRain = [1,2];*/
 
       // no data received from node_helper.js
-      if (!payload.times || payload.times.length == 0) {
+      if (!payload.times || payload.times.length === 0) {
+        this.log("Wrong or no data received: "+payload);
         this.msg = this.translate("NODATA");
       } else if (payload.completeRain < 0.01) {
         //no rain calculated in node_helper.js
         this.log("No rain expected until " + moment(payload.times[payload.times.length-1]).format("HH:mm"));
         this.msg = this.translate("NORAIN") + moment(payload.times[payload.times.length-1]).format("HH:mm");
+        document.getElementById("rainGraph").style.display = "none";
+        var svgs = document.getElementsByClassName("rainSVG");
+        Array.prototype.forEach.call(svgs, function(element) { 
+          element.style.display = "none"; 
+        });
       } else {
         this.log(payload);
-
         var /*intensity = this.translate(rainIntensity),*/
             rain = this.translate("RAIN"),
             starts_at = this.translate("STARTS_AT"),
@@ -84,7 +90,7 @@ Module.register("MMM-Buienalarm",{
         this.msg = rain;
         if (payload.startRain && payload.startRain[0] > moment().format()) {
           this.msg += (starts_at + moment(payload.startRain[0]).format("HH:mm"));
-          if (payload.endRain && payload.endRain[0] > moment().format()) {
+          if (payload.endRain && payload.endRain[0] > payload.startRain[0]) {
             this.msg += (and + ends_at + moment(payload.endRain[0]).format("HH:mm"));
           }
         } else if (payload.startRain[0] && payload.startRain[0] < moment().format()) {
@@ -93,14 +99,12 @@ Module.register("MMM-Buienalarm",{
           //this.msg = "";
         }
         this.log(this.msg);
+        this.log("Drawing rain graph");
+        this.drawChart(payload);
       }
       //this.updateDom();
       var msgWrapper = document.getElementById("msg");
       msgWrapper.innerHTML = this.msg;
-      if (payload.completeRain >= 0.1) {
-        this.log("Drawing rain graph");
-        this.drawChart(payload);
-      }
     }
   },
 
@@ -126,14 +130,12 @@ Module.register("MMM-Buienalarm",{
     iconWrapper.id = "iconWrapper";
     iconWrapper.style.width = this.config.width+"px";
     iconWrapper.style.height = this.config.height+"px";
-    this.log("IconWrapper: "+iconWrapper.style);
     var iconPath = "url('" + this.file("icons/rain_light.svg") + "')";
     var lightRain = document.createElement("div");
     lightRain.className = "rainSVG";
     lightRain.id = "lightRain";
     lightRain.style.height = this.config.iconHeight+"px";
     lightRain.style.background = iconPath + " no-repeat";
-    this.log("Background: "+lightRain.style.background);
     lightRain.style.display = "none";
     iconPath = "url('" + this.file("icons/rain_medium.svg") + "')";
     var medRain = document.createElement("div");
@@ -183,10 +185,10 @@ Module.register("MMM-Buienalarm",{
         datasets: [{
           //label: "rain",
           data: data.rainDrops,
-          backgroundColor: 'rgba(65, 105, 220, 1)',
+          backgroundColor: this.config.chartFillColor,
           borderWidth: 1,
       	  pointRadius: 0,
-          fill: 'origin'
+          fill: 'origin',
         }],
       },
       options: {
@@ -199,12 +201,15 @@ Module.register("MMM-Buienalarm",{
           yAxes: [{
             display: true,
             ticks: {
-              suggestedMax: 0.6,
+              suggestedMax: 0.8,
               display: false,
             }
           }],
           xAxes: [{
             type: "time",
+			offset: true,
+            barPercentage: 1,
+            categoryPercentage: 0.9,
             time: {
               unit: 'hour',
               unitStepSize: 0.5,
@@ -215,10 +220,12 @@ Module.register("MMM-Buienalarm",{
             },
             gridLines: {
               display: true,
-              borderDash: [5, 5]
+              borderDash: [5, 5],
+              zeroLinecolor: '#ddd',
+			  offsetGridLines: true
             },
             ticks: {
-              fontColor: '#eee',
+              fontColor: '#ddd',
               fontSize: 20,
             }
           }]
