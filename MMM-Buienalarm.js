@@ -21,6 +21,7 @@ Module.register("MMM-Buienalarm",{
     updateInterval: 5 * 60 * 1000,
     chartType: 'line',
     chartFillColor: 'rgba(65, 105, 220, 1)',
+    hideWithNoRain: true,
     debug: false
   },
 
@@ -73,15 +74,20 @@ Module.register("MMM-Buienalarm",{
         this.msg = this.translate("NODATA");
       } else if (payload.completeRain < 0.01) {
         //no rain calculated in node_helper.js
-        this.log("No rain expected until " + moment(payload.times[payload.times.length-1]).format("HH:mm"));
-        this.msg = this.translate("NORAIN") + moment(payload.times[payload.times.length-1]).format("HH:mm");
-        document.getElementById("rainGraph").style.display = "none";
-        var svgs = document.getElementsByClassName("rainSVG");
-        Array.prototype.forEach.call(svgs, function(element) { 
-          element.style.display = "none"; 
-        });
+        if (this.config.hideWithNoRain) {
+          this.hide();
+        } else {
+          this.log("No rain expected until " + moment(payload.times[payload.times.length-1]).format("HH:mm"));
+          this.msg = this.translate("NORAIN") + moment(payload.times[payload.times.length-1]).format("HH:mm");
+          document.getElementById("rainGraph").style.display = "none";
+          var svgs = document.getElementsByClassName("rainSVG");
+          Array.prototype.forEach.call(svgs, function(element) { 
+            element.style.display = "none"; 
+          });
+        }
       } else {
         this.log(payload);
+        this.show();
         var /*intensity = this.translate(rainIntensity),*/
             rain = this.translate("RAIN"),
             starts_at = this.translate("STARTS_AT"),
