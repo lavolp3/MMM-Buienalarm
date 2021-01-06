@@ -17,6 +17,7 @@ Module.register("MMM-Buienalarm",{
     height: 400,
     iconHeight: 40,
     apiBase: "https://gpsgadget.buienradar.nl",
+    apiKey: '',
     endpoint: "data/raintext",
     updateInterval: 5 * 60 * 1000,
     chartType: 'line',
@@ -24,7 +25,6 @@ Module.register("MMM-Buienalarm",{
     hideWithNoRain: true,
     debug: false
   },
-
   msg: "LOADING",
 
   // Override start method.
@@ -61,7 +61,7 @@ Module.register("MMM-Buienalarm",{
       this.msg = payload.error;
     } else if (notification == "RAIN_DATA") {
 
-      // bugifixing option. Uncomment to change rain amount to
+      // bugfixing option. Uncomment to change rain amount to
 
       /*payload.completeRain = 1.5163810192021259;
       payload.rainDrops = [0.0003924189758484536, 0.0003924189758484536, 0.0003924189758484536, 0.12409377607517195, 0.1, 0.0003924189758484536, 0.0003924189758484536, 0.0019109529749704406, 0.004869675251658631, 0.2053525026457146, 0.08659643233600653, 0.3924189758484536, 0.03651741272548377, 0.004531583637600818, 0.0220673406908459, 0.02053525026457146, 0.29427271762092816, 0.2053525026457146, 0.014330125702369627, 0.0003924189758484536, 0.0003924189758484536, 0.0003924189758484536, 0.0003924189758484536];
@@ -74,6 +74,7 @@ Module.register("MMM-Buienalarm",{
         this.msg = this.translate("NODATA");
       } else if (payload.completeRain < 0.01) {
         //no rain calculated in node_helper.js
+        this.log("No rain expected!");
         if (this.config.hideWithNoRain) {
           this.hide();
         } else {
@@ -81,9 +82,10 @@ Module.register("MMM-Buienalarm",{
           this.msg = this.translate("NORAIN") + moment(payload.times[payload.times.length-1]).format("HH:mm");
           document.getElementById("rainGraph").style.display = "none";
           var svgs = document.getElementsByClassName("rainSVG");
-          Array.prototype.forEach.call(svgs, function(element) { 
-            element.style.display = "none"; 
+          Array.prototype.forEach.call(svgs, function(element) {
+            element.style.display = "none";
           });
+          this.drawChart(payload);
         }
       } else {
         this.log(payload);
@@ -94,7 +96,7 @@ Module.register("MMM-Buienalarm",{
             and = this.translate("AND"),
             ends_at = this.translate("ENDS_AT");
         this.msg = rain;
-        if (payload.startRain && payload.startRain[0] > moment().format()) {
+        if (payload.startRain && payload.startRain[0] >= moment().format()) {
           this.msg += (starts_at + moment(payload.startRain[0]).format("HH:mm"));
           if (payload.endRain && payload.endRain[0] > payload.startRain[0]) {
             this.msg += (and + ends_at + moment(payload.endRain[0]).format("HH:mm"));
@@ -108,8 +110,7 @@ Module.register("MMM-Buienalarm",{
         this.log("Drawing rain graph");
         this.drawChart(payload);
       }
-      //this.updateDom();
-      var msgWrapper = document.getElementById("msg");
+      var msgWrapper = document.getElementById("buienalarm-msg");
       msgWrapper.innerHTML = this.msg;
     }
   },
@@ -120,7 +121,7 @@ Module.register("MMM-Buienalarm",{
     wrapper.className = "rainWrapper";
     wrapper.width = this.config.width;
     var msgWrapper = document.createElement("div");
-    msgWrapper.id = "msg";
+    msgWrapper.id = "buienalarm-msg";
     msgWrapper.style.width = this.config.width + "px";
     msgWrapper.className = "small";
     msgWrapper.innerHTML = this.msg;
@@ -218,7 +219,7 @@ Module.register("MMM-Buienalarm",{
             categoryPercentage: 0.9,
             time: {
               unit: 'hour',
-              unitStepSize: 0.5,
+              unitStepSize: 1,
               //parser: "HH:mm",
               displayFormats: {
                 hour: 'HH:mm'
