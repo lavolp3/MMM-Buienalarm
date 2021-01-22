@@ -1,12 +1,13 @@
 # MMM-Buienalarm
-A <a href="https://github.com/MichMich/MagicMirror">MagicMirror</a> module forecasting rain in the Netherlands and western Germany.
+A <a href="https://github.com/MichMich/MagicMirror">MagicMirror</a> module using the climacell api to forecast rain amounts over the next several hours.
 
-This module is based on MMM-rainfc by Cirdan and MMM-rain-forecast by Spoturdeal, many thanks for their great work!
-I wanted to make it bigger and more prominent on the mirror and use a chartjs graph because of their great library.
-I also tried to have it look a bit more like the Buienalarm Android App.
+This module is based on MMM-rainfc by Cirdan and MMM-rain-forecast by Spoturdeal, many thanks for their work!
 
-The module now uses chart.js for the chart and a gradient fill to show intensity of the rain.
 
+## Updates
+
+1.0.0 2021-01-12
+- stable version published.
 
 ## Installation
 1. Navigate into your MagicMirror's `modules` folder and execute `git clone https://github.com/lavolp3/MMM-Buienalarm.git`.
@@ -18,6 +19,7 @@ The module now uses chart.js for the chart and a gradient fill to show intensity
 
 |Option|Description|
 |---|---|
+|`apiKey`|ClimaCell API Key.<br>Get it here!|
 |`lat`|The latitude of your position.<br>**Type:** `Float`<br>**Default:** <i>52.15</i>|
 |`lon`|The longitude of your position.<br>**Type:** `Float`<br>**Default:** <i>5.55</i>|
 |`width`|Width of the graph<br>**Type:** `String`<br>**Default:** <i>"500"</i>|
@@ -39,7 +41,7 @@ Here is an example of an entry in `config.js`
         lon: 5.55,
         width: "500",
         height: "400",
-        chartType: "line",
+        chartType: "line",  //use "line" or "bar"
     }
 },
 ```
@@ -49,12 +51,10 @@ Here is an example of an entry in `config.js`
 
 
 ## Notes
-Data provided by <a href="https://www.buienradar.nl/">Buienradar</a>.
-- Update every 5 minutes.
+Data provided by <a href="https://www.climacell.co/">climacell</a>.
 
 ## Contributors
 
-<a href="https://github.com/73cirdan/MMM-rainfc">Cirdan</a> and <a href="https://github.com/Spoturdeal/MMM-rain-forecast">Spoturdeal</a> have laid the groundwork for this module.
 
 
 
@@ -62,7 +62,7 @@ Data provided by <a href="https://www.buienradar.nl/">Buienradar</a>.
 The MIT License (MIT)
 =====================
 
-Copyright © 2019 lavolp3
+Copyright © 2020 lavolp3
 
 Permission is hereby granted, free of charge, to any person
 obtaining a copy of this software and associated documentation

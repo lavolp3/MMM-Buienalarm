@@ -11,9 +11,6 @@
   overflow: hidden;
 }
 
-.MMM-Buienalarm .rainSVG {
-  position: absolute;
+.MMM-Buienalarm .highcharts-plot-band-label img {
   filter: invert(100%);
-  border-bottom: #444 solid 2px;
-  width: 100%;
 }

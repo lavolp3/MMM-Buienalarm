@@ -3,7 +3,7 @@
 
 /* Magic Mirror
  * Module: MMM-Buienalarm
- * Displays a scalable chart.js graph of expected rain for a lon/lat pair based on a Dutch public Api (Buienradar)
+ * Displays a scalable hihcharts graph of expected rain for a lon/lat pair based on a Dutch public Api (Buienradar)
  *  https://gpsgadget.buienradar.nl/data/raintext?lat=52.15&lon=5.5
  * By lavolp3, based on the work of Spoturdeal's MMM-rain-forecast.
  */
@@ -16,9 +16,9 @@ Module.register("MMM-Buienalarm",{
     width: 500,
     height: 400,
     iconHeight: 40,
-    apiBase: "https://gpsgadget.buienradar.nl",
     apiKey: '',
-    endpoint: "data/raintext",
+    forecastHours: 8,
+    forecastSteps: 15,
     updateInterval: 5 * 60 * 1000,
     chartType: 'line',
     chartFillColor: 'rgba(65, 105, 220, 1)',
@@ -29,20 +29,20 @@ Module.register("MMM-Buienalarm",{
 
   // Override start method.
   start: function() {
-    console.log("Starting module: " + this.name);
-    this.sendSocketNotification("RAIN_REQUEST", this.config);
+      console.log("Starting module: " + this.name);
+      this.sendSocketNotification("RAIN_REQUEST", this.config);
   },
 
   // Define required scripts. Chart.js needed for the graph.
   getScripts: function() {
-    return [
-      'modules/MMM-Buienalarm/node_modules/chart.js/dist/Chart.bundle.js',
-    ];
+      return [
+          'modules/MMM-Buienalarm/node_modules/highcharts/highstock.js',
+      ];
   },
 
   // Define required styles.
   getStyles: function() {
-    return ["MMM-Buienalarm.css"];
+      return ["MMM-Buienalarm.css"];
   },
 
   getTranslations: function() {
@@ -54,22 +54,25 @@ Module.register("MMM-Buienalarm",{
   },
 
   socketNotificationReceived: function(notification, payload) {
-    this.log("Socket Notification received: "+notification);
+      this.log("Socket Notification received: "+notification);
 
-    // was not able to receive data
-    if (notification == "ERROR") {
-      this.msg = payload.error;
-    } else if (notification == "RAIN_DATA") {
-
-      // bugfixing option. Uncomment to change rain amount to
+      // was not able to receive data
+      if (notification == "ERROR") {
+          this.msg = payload.error;
+      } else if (notification == "RAIN_DATA") {
 
       /*payload.completeRain = 1.5163810192021259;
       payload.rainDrops = [0.0003924189758484536, 0.0003924189758484536, 0.0003924189758484536, 0.12409377607517195, 0.1, 0.0003924189758484536, 0.0003924189758484536, 0.0019109529749704406, 0.004869675251658631, 0.2053525026457146, 0.08659643233600653, 0.3924189758484536, 0.03651741272548377, 0.004531583637600818, 0.0220673406908459, 0.02053525026457146, 0.29427271762092816, 0.2053525026457146, 0.014330125702369627, 0.0003924189758484536, 0.0003924189758484536, 0.0003924189758484536, 0.0003924189758484536];
       payload.completeRain = 1.5163;
-      payload.maxRain = [1,2];*/
+      payload.maxRain = [1,2];
+      payload.rainData = [0.0003924189758484536, 0.0003924189758484536, 0.0003924189758484536, 0.12409377607517195, 0.1, 0.0003924189758484536, 0.0003924189758484536, 0.001910952974970440]
+      */
+          this.log(payload);
+          if (payload.data) { this.processData(payload); }
+
 
       // no data received from node_helper.js
-      if (!payload.times || payload.times.length === 0) {
+      /*if (!payload.times || payload.times.length === 0) {
         this.log("Wrong or no data received: "+payload);
         this.msg = this.translate("NODATA");
       } else if (payload.completeRain < 0.01) {
@@ -90,7 +93,7 @@ Module.register("MMM-Buienalarm",{
       } else {
         this.log(payload);
         this.show();
-        var /*intensity = this.translate(rainIntensity),*/
+        var 
             rain = this.translate("RAIN"),
             starts_at = this.translate("STARTS_AT"),
             and = this.translate("AND"),
@@ -111,10 +114,49 @@ Module.register("MMM-Buienalarm",{
         this.drawChart(payload);
       }
       var msgWrapper = document.getElementById("buienalarm-msg");
-      msgWrapper.innerHTML = this.msg;
+      msgWrapper.innerHTML = this.msg;*/
     }
   },
 
+
+  processData: function(payload) {
+    var endOfForecast = moment().add(this.config.forecastHours, "hours").format("x");
+    var rainData = payload.data.timelines[0].intervals;
+    this.rainData = {
+      times: [],
+      rain: [],
+      completeRain: 0,
+      cloudCover: [],
+      pressure: [],
+      visibility: [],
+      windSpeed: [],
+      windGust: [],
+      windDirection: [],
+      rainProb: [],
+      temp: [],
+      appTemp: []
+    };
+    var i = 0;
+    for (var i = 0; i < rainData.length; i++) {
+        if (moment(rainData[i].startTime).format("x") < endOfForecast) {
+        var time = parseInt(moment(rainData[i].startTime).format("x"));
+        this.rainData.times.push(time);
+        this.rainData.rain.push([time, rainData[i].values.precipitationIntensity]);
+        this.rainData.completeRain += rainData[i].values.precipitationIntensity;
+        this.rainData.cloudCover.push([time, rainData[i].values.cloudCover]);
+        this.rainData.pressure.push([time, rainData[i].values.pressureSurfaceLevel]);
+        this.rainData.visibility.push([time, rainData[i].values.visibility]);
+        this.rainData.windSpeed.push([time, rainData[i].values.windSpeed]);
+        this.rainData.windGust.push([time, rainData[i].values.windGust]);
+        this.rainData.windDirection.push([time, rainData[i].values.windDirection]);
+        this.rainData.rainProb.push([time, rainData[i].values.precipitationProbability]);
+        this.rainData.temp.push([time, rainData[i].values.temperature]);
+        this.rainData.appTemp.push([time, rainData[i].values.temperatureApparent]);
+        }
+     }
+     this.log(this.rainData);
+     this.drawChart(this.rainData);
+  },
   // Override dom generator.
   getDom: function() {
     var wrapper = document.createElement("div");
@@ -126,14 +168,14 @@ Module.register("MMM-Buienalarm",{
     msgWrapper.className = "small";
     msgWrapper.innerHTML = this.msg;
     wrapper.appendChild(msgWrapper);
-    var graph = document.createElement("canvas");
+    var graph = document.createElement("div");
     graph.className = "small thin light";
     graph.id = "rainGraph";
     graph.height = this.config.height;
     graph.width = this.config.width;
     graph.style.display = "none";
 
-    var iconWrapper = document.createElement("div");
+    /*var iconWrapper = document.createElement("div");
     iconWrapper.id = "iconWrapper";
     iconWrapper.style.width = this.config.width+"px";
     iconWrapper.style.height = this.config.height+"px";
@@ -161,15 +203,15 @@ Module.register("MMM-Buienalarm",{
     iconWrapper.appendChild(lightRain);
     iconWrapper.appendChild(medRain);
     iconWrapper.appendChild(heavyRain);
-    wrapper.appendChild(iconWrapper);
+    wrapper.appendChild(iconWrapper);*/
     wrapper.appendChild(graph);
     return wrapper;
   },
 
 
 
-  /* Draw chart using chart.js node module
-  * For config options visit https://www.chartjs.org/docs/latest/
+  /* Draw chart using highcharts node module
+  * For config options visit https://api.highcharts.com/highcharts
   */
   drawChart: function(data) {
 
@@ -177,106 +219,129 @@ Module.register("MMM-Buienalarm",{
     graph.style.display = "block";
     graph.width = this.config.width;
     graph.height = this.config.height;
-    var ctx = graph.getContext("2d");
-    Chart.defaults.global.defaultFontSize = 14;
-    var maxRain = 0;
+    /*var maxRain = 0;
     for (var m = 0; m < data.maxRain.length; m++) {
        maxRain = Math.max(maxRain, data.maxRain[m][0]);
-    }
+    }*/
 
 
-    var rainChart = new Chart(ctx, {
-      type: this.config.chartType,
-     	data: {
-        labels: data.times,
-        datasets: [{
-          //label: "rain",
-          data: data.rainDrops,
-          backgroundColor: this.config.chartFillColor,
-          borderWidth: 1,
-      	  pointRadius: 0,
-          fill: 'origin',
-        }],
+    Highcharts.chart("rainGraph", {
+      chart: {
+        type: 'areaspline',
+        backgroundColor: '#000',
+        plotBackgroundColor: '#000',
+        plotBorderWidth: '0',
+        style: {
+          fontSize: "0.9em",
+          fontColor: "#eee",
+        }
       },
-      options: {
-        responsive: false,
-        maintainAspectRatio: true,
-        animation: {
-          duration: 0,
+      title: {
+        //enabled: false,
+        text: undefined,
+        //align: 'left'
+      },
+      legend: {
+        enabled: false
+      },
+      credits: {
+        enabled: false
+      },
+      xAxis: {
+        type: 'datetime',
+        labels: {
+          overflow: 'justify',
+          style: {
+            fontSize: '1em'
+          }
+        }
+      },
+      yAxis: {
+        labels: {
+          enabled: false,
+          //title: undefined,
+          style: {
+            fontSize: '1em'
+          }
         },
-        scales: {
-          yAxes: [{
-            display: true,
-            ticks: {
-              suggestedMax: 0.8,
-              display: false,
-            }
-          }],
-          xAxes: [{
-            type: "time",
-			offset: true,
-            barPercentage: 1,
-            categoryPercentage: 0.9,
-            time: {
-              unit: 'hour',
-              unitStepSize: 1,
-              //parser: "HH:mm",
-              displayFormats: {
-                hour: 'HH:mm'
-              },
-            },
-            gridLines: {
-              display: true,
-              borderDash: [5, 5],
-              zeroLinecolor: '#ddd',
-			  offsetGridLines: true
-            },
-            ticks: {
-              fontColor: '#ddd',
-              fontSize: 20,
-            }
-          }]
+        title: {
+          text: null
         },
-        legend: { display: false, },
-        borderColor: 'white',
-        borderWidth: 1,
-        cubicInterpolationMode: "default",
-      }
+        min: 0,
+        softMax: 1,
+        floor: 0,
+        startOnTick: false,
+        minorGridLineWidth: 0,
+        gridLineWidth: 0,
+        //alternateGridColor: null,
+        //Light rain — when the precipitation rate is < 2.5 mm (0.098 in) per hour
+        //Moderate rain — when the precipitation rate is between 2.5 mm (0.098 in) - 7.6 mm (0.30 in) or 10 mm (0.39 in) per hour[106][107]
+        //Heavy rain — when the precipitation rate is > 7.6 mm (0.30 in) per hour,[106] or between 10 mm (0.39 in) and 50 mm (2.0 in) per hour[107]
+        //Violent rain — when the precipitation rate is > 50 mm (2.0 in) per hour[107]
+        plotBands: [
+          {
+          from: 0,
+          to: 2.5*(this.config.forecastSteps/60),
+          color: 'rgba(68, 170, 213, 0.2)',
+          label: {
+            useHTML: true,
+            text: '<img src=' + this.file('icons/rain_light.svg') + ' width="50" height="50" >',
+            style: {
+              color: '#fafafa'
+            }
+          }
+        }, {
+          from: 2.5*(this.config.forecastSteps/60),
+          to: 7.6*(this.config.forecastSteps/60),
+          color: 'rgba(68, 170, 213, 0.4)',
+          label: {
+            useHTML: true,
+            text: '<img src=' + this.file('icons/rain_medium.svg') + ' width="50" height="50" >',
+            style: {
+              color: '#fafafa'
+            }
+          }
+        }, {
+          from: 7.6*(this.config.forecastSteps/60),
+          to: 50*(this.config.forecastSteps/60),
+          color: 'rgba(68, 170, 213, 0.6)',
+          label: {
+            useHTML: true,
+            text: '<img src=' + this.file('icons/rain_heavy.svg') + ' width="50" height="50" >',
+            style: {
+              color: '#fafafa'
+            }
+          }
+        }, {
+          from: 50*(this.config.forecastSteps/60),
+          to: 200*(this.config.forecastSteps/60),
+          color: 'rgba(68, 170, 213, 0.8)',
+          label: {
+            useHTML: true,
+            text: '<img src=' + this.file('icons/rain_heavy.svg') + ' width="50" height="50" >',
+            style: {
+              color: '#fafafa'
+            }
+          }
+        }]
+      },
+      plotOptions: {
+        areaspline: {
+          lineWidth: 3,
+          marker: {
+            enabled: false
+          },
+        }
+      },
+      series: [{
+        data: data.rain,
+        lineColor: this.config.chartFillColor,
+      }],
+      navigation: {
+        enabled: false,
+      },
     });
-    this.drawIcons(maxRain);
   },
-
-
-  drawIcons: function(maxRain) {
-    var moveTo = 0;
-    var graphHeight = this.config.height - 50 - this.config.iconHeight;
-    this.log("MaxRain for icons: "+maxRain);
-    if (maxRain > 2.5) {
-      this.log("Drawing icons:heavy");
-      moveTo = (graphHeight*(1-2.5/maxRain));
-      heavyRain.style.display = "block";
-      heavyRain.style.marginTop = Math.min(moveTo, graphHeight) + "px" ;
-    } else {
-      heavyRain.style.display = "none";
-    }
-    if (maxRain > 0.6 && maxRain < 4) {
-      this.log("Drawing icons: med");
-      moveTo = (graphHeight*(1-0.6/maxRain));
-      medRain.style.display = "block";
-      medRain.style.marginTop = Math.min(moveTo, graphHeight) +"px";
-    } else {
-      medRain.style.display = "none";
-    }
-    if (maxRain < 2) {
-      this.log("Drawing icons: light");
-      moveTo = (graphHeight*(1- 0.15/maxRain));
-      lightRain.style.display = "block";
-      lightRain.style.marginTop = Math.min(moveTo, graphHeight) +"px";
-    } else {
-      lightRain.style.display = "none";
-    }
-  },
-
 
   log: function (msg) {
     if (this.config && this.config.debug) {
