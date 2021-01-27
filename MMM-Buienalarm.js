@@ -1,36 +1,33 @@
-
-/* global Module */
-
 /* Magic Mirror
- * Module: MMM-Buienalarm
- * Displays a scalable hihcharts graph of expected rain for a lon/lat pair based on a Dutch public Api (Buienradar)
- *  https://gpsgadget.buienradar.nl/data/raintext?lat=52.15&lon=5.5
- * By lavolp3, based on the work of Spoturdeal's MMM-rain-forecast.
+ * Module: MMM-RainForecast
+ * Displays a scalable hihcharts graph of expected rain for a lon/lat pair based on the climacell free  API
+ * By lavolp3, based on the module MMM-Buienalarm.
  */
 
 Module.register("MMM-Buienalarm",{
-  // Default module config.
-  defaults: {
-    lat: 52.15,
-    lon: 5.5,
+    // Default module config.
+    defaults: {
+        lat: 52.222,
+    lon: 5.555,
     width: 500,
     height: 400,
     iconHeight: 40,
     apiKey: '',
-    forecastHours: 8,
+    forecastHours: 4,
     forecastSteps: 15,
     updateInterval: 5 * 60 * 1000,
     chartType: 'line',
     chartFillColor: 'rgba(65, 105, 220, 1)',
     hideWithNoRain: true,
     debug: false
-  },
-  msg: "LOADING",
+    },
+    msg: "LOADING",
 
   // Override start method.
   start: function() {
       console.log("Starting module: " + this.name);
       this.sendSocketNotification("RAIN_REQUEST", this.config);
+      if (![1,5,15,30].includes(this.config.forecastSteps)) { this.config.forecastSteps = 15; }
   },
 
   // Define required scripts. Chart.js needed for the graph.
@@ -71,50 +68,6 @@ Module.register("MMM-Buienalarm",{
           if (payload.data) { this.processData(payload); }
 
 
-      // no data received from node_helper.js
-      /*if (!payload.times || payload.times.length === 0) {
-        this.log("Wrong or no data received: "+payload);
-        this.msg = this.translate("NODATA");
-      } else if (payload.completeRain < 0.01) {
-        //no rain calculated in node_helper.js
-        this.log("No rain expected!");
-        if (this.config.hideWithNoRain) {
-          this.hide();
-        } else {
-          this.log("No rain expected until " + moment(payload.times[payload.times.length-1]).format("HH:mm"));
-          this.msg = this.translate("NORAIN") + moment(payload.times[payload.times.length-1]).format("HH:mm");
-          document.getElementById("rainGraph").style.display = "none";
-          var svgs = document.getElementsByClassName("rainSVG");
-          Array.prototype.forEach.call(svgs, function(element) {
-            element.style.display = "none";
-          });
-          this.drawChart(payload);
-        }
-      } else {
-        this.log(payload);
-        this.show();
-        var 
-            rain = this.translate("RAIN"),
-            starts_at = this.translate("STARTS_AT"),
-            and = this.translate("AND"),
-            ends_at = this.translate("ENDS_AT");
-        this.msg = rain;
-        if (payload.startRain && payload.startRain[0] >= moment().format()) {
-          this.msg += (starts_at + moment(payload.startRain[0]).format("HH:mm"));
-          if (payload.endRain && payload.endRain[0] > payload.startRain[0]) {
-            this.msg += (and + ends_at + moment(payload.endRain[0]).format("HH:mm"));
-          }
-        } else if (payload.startRain[0] && payload.startRain[0] < moment().format()) {
-          this.msg += (ends_at + moment(payload.endRain[0]).format("HH:mm"));
-        } else {
-          //this.msg = "";
-        }
-        this.log(this.msg);
-        this.log("Drawing rain graph");
-        this.drawChart(payload);
-      }
-      var msgWrapper = document.getElementById("buienalarm-msg");
-      msgWrapper.innerHTML = this.msg;*/
     }
   },
 
@@ -123,47 +76,84 @@ Module.register("MMM-Buienalarm",{
     var endOfForecast = moment().add(this.config.forecastHours, "hours").format("x");
     var rainData = payload.data.timelines[0].intervals;
     this.rainData = {
-      times: [],
-      rain: [],
-      completeRain: 0,
-      cloudCover: [],
-      pressure: [],
-      visibility: [],
-      windSpeed: [],
-      windGust: [],
-      windDirection: [],
-      rainProb: [],
-      temp: [],
-      appTemp: []
+        times: [],
+        rain: [],
+        completeRain: 0,
+        cloudCover: [],
+        pressure: [],
+        visibility: [],
+        windSpeed: [],
+        windGust: [],
+        windDirection: [],
+        rainProb: [],
+        temp: [],
+        appTemp: []
     };
     var i = 0;
     for (var i = 0; i < rainData.length; i++) {
         if (moment(rainData[i].startTime).format("x") < endOfForecast) {
-        var time = parseInt(moment(rainData[i].startTime).format("x"));
-        this.rainData.times.push(time);
-        this.rainData.rain.push([time, rainData[i].values.precipitationIntensity]);
-        this.rainData.completeRain += rainData[i].values.precipitationIntensity;
-        this.rainData.cloudCover.push([time, rainData[i].values.cloudCover]);
-        this.rainData.pressure.push([time, rainData[i].values.pressureSurfaceLevel]);
-        this.rainData.visibility.push([time, rainData[i].values.visibility]);
-        this.rainData.windSpeed.push([time, rainData[i].values.windSpeed]);
-        this.rainData.windGust.push([time, rainData[i].values.windGust]);
-        this.rainData.windDirection.push([time, rainData[i].values.windDirection]);
-        this.rainData.rainProb.push([time, rainData[i].values.precipitationProbability]);
-        this.rainData.temp.push([time, rainData[i].values.temperature]);
-        this.rainData.appTemp.push([time, rainData[i].values.temperatureApparent]);
+            var time = parseInt(moment(rainData[i].startTime).add(moment().utcOffset(), "minutes").format("x"));
+            this.rainData.times.push(time);
+            this.rainData.rain.push([time, rainData[i].values.precipitationIntensity]);
+            this.rainData.completeRain += rainData[i].values.precipitationIntensity;
+            this.rainData.cloudCover.push([time, rainData[i].values.cloudCover]);
+            this.rainData.pressure.push([time, rainData[i].values.pressureSurfaceLevel]);
+            this.rainData.visibility.push([time, rainData[i].values.visibility]);
+            this.rainData.windSpeed.push([time, rainData[i].values.windSpeed]);
+            this.rainData.windGust.push([time, rainData[i].values.windGust]);
+            this.rainData.windDirection.push([time, rainData[i].values.windDirection]);
+            this.rainData.rainProb.push([time, rainData[i].values.precipitationProbability]);
+            this.rainData.temp.push([time, rainData[i].values.temperature]);
+            this.rainData.appTemp.push([time, rainData[i].values.temperatureApparent]);
         }
-     }
-     this.log(this.rainData);
-     this.drawChart(this.rainData);
+    }
+    this.log(this.rainData);
+    // no data received from node_helper.js
+    if (!this.rainData.times || this.rainData.times.length === 0) {
+        this.log("Wrong or no data received: "+payload);
+        this.msg = this.translate("NODATA");
+    } else if (this.rainData.completeRain < 0.01) {
+        //no rain calculated in node_helper.js
+        this.log("No rain expected!");
+        this.log("No rain expected before " + moment(this.rainData.times[this.rainData.times.length-1]).format("LT"));
+        this.msg = this.translate("NORAIN") + moment(this.rainData.times[this.rainData.times.length-1]).format("LT");
+        if (this.config.hideWithNoRain) {
+            document.getElementById("rainGraph").style.display = "none"
+        } else {
+            this.drawChart(this.rainData)
+        }
+    } else {
+        var
+            rain = this.translate("RAIN"),
+            starts_at = this.translate("STARTS_AT"),
+            and = this.translate("AND"),
+            ends_at = this.translate("ENDS_AT");
+        this.msg = rain;
+        /*if (payload.startRain && payload.startRain[0] >= moment().format()) {
+          this.msg += (starts_at + moment(payload.startRain[0]).format("HH:mm"));
+          if (payload.endRain && payload.endRain[0] > payload.startRain[0]) {
+            this.msg += (and + ends_at + moment(payload.endRain[0]).format("HH:mm"));
+          }
+        } else if (payload.startRain[0] && payload.startRain[0] < moment().format()) {
+          this.msg += (ends_at + moment(payload.endRain[0]).format("HH:mm"));
+        } else {
+          //this.msg = "";
+        }*/
+        this.log(this.msg);
+        this.log("Drawing rain graph");
+        this.drawChart(this.rainData);
+    }
+    var msgWrapper = document.getElementById("rainforecast-msg");
+    msgWrapper.innerHTML = this.msg;
   },
+
   // Override dom generator.
   getDom: function() {
     var wrapper = document.createElement("div");
     wrapper.className = "rainWrapper";
     wrapper.width = this.config.width;
     var msgWrapper = document.createElement("div");
-    msgWrapper.id = "buienalarm-msg";
+    msgWrapper.id = "rainforecast-msg";
     msgWrapper.style.width = this.config.width + "px";
     msgWrapper.className = "small";
     msgWrapper.innerHTML = this.msg;
@@ -174,36 +164,6 @@ Module.register("MMM-Buienalarm",{
     graph.height = this.config.height;
     graph.width = this.config.width;
     graph.style.display = "none";
-
-    /*var iconWrapper = document.createElement("div");
-    iconWrapper.id = "iconWrapper";
-    iconWrapper.style.width = this.config.width+"px";
-    iconWrapper.style.height = this.config.height+"px";
-    var iconPath = "url('" + this.file("icons/rain_light.svg") + "')";
-    var lightRain = document.createElement("div");
-    lightRain.className = "rainSVG";
-    lightRain.id = "lightRain";
-    lightRain.style.height = this.config.iconHeight+"px";
-    lightRain.style.background = iconPath + " no-repeat";
-    lightRain.style.display = "none";
-    iconPath = "url('" + this.file("icons/rain_medium.svg") + "')";
-    var medRain = document.createElement("div");
-    medRain.className = "rainSVG";
-    medRain.id = "medRain";
-    medRain.style.height = this.config.iconHeight+"px";
-    medRain.style.background = iconPath + " no-repeat";
-    medRain.style.display = "none";
-    iconPath = "url('" + this.file("icons/rain_heavy.svg") + "')";
-    var heavyRain = document.createElement("div");
-    heavyRain.className = "rainSVG";
-    heavyRain.id = "heavyRain";
-    heavyRain.style.height = this.config.iconHeight+"px";
-    heavyRain.style.background = iconPath + " no-repeat";
-    heavyRain.style.display = "none";
-    iconWrapper.appendChild(lightRain);
-    iconWrapper.appendChild(medRain);
-    iconWrapper.appendChild(heavyRain);
-    wrapper.appendChild(iconWrapper);*/
     wrapper.appendChild(graph);
     return wrapper;
   },
@@ -268,8 +228,7 @@ Module.register("MMM-Buienalarm",{
           text: null
         },
         min: 0,
-        softMax: 1,
-        floor: 0,
+        softMax: this.config.forecastSteps / 20,
         startOnTick: false,
         minorGridLineWidth: 0,
         gridLineWidth: 0,
@@ -282,10 +241,11 @@ Module.register("MMM-Buienalarm",{
           {
           from: 0,
           to: 2.5*(this.config.forecastSteps/60),
-          color: 'rgba(68, 170, 213, 0.2)',
+          //color: '#000',
+          color: 'rgba(68, 170, 213, 0.1)',
           label: {
             useHTML: true,
-            text: '<img src=' + this.file('icons/rain_light.svg') + ' width="50" height="50" >',
+            text: '<img src=' + this.file('icons/rain_light.svg') + ' height="' + this.config.iconHeight +'" >',
             style: {
               color: '#fafafa'
             }
@@ -293,10 +253,11 @@ Module.register("MMM-Buienalarm",{
         }, {
           from: 2.5*(this.config.forecastSteps/60),
           to: 7.6*(this.config.forecastSteps/60),
-          color: 'rgba(68, 170, 213, 0.4)',
+          color: '#000',
+          //color: 'rgba(68, 170, 213, 0.2)',
           label: {
             useHTML: true,
-            text: '<img src=' + this.file('icons/rain_medium.svg') + ' width="50" height="50" >',
+            text: '<img src=' + this.file('icons/rain_medium.svg') + ' height="' + this.config.iconHeight +'" >',
             style: {
               color: '#fafafa'
             }
@@ -304,10 +265,11 @@ Module.register("MMM-Buienalarm",{
         }, {
           from: 7.6*(this.config.forecastSteps/60),
           to: 50*(this.config.forecastSteps/60),
-          color: 'rgba(68, 170, 213, 0.6)',
+          //color: '#000',
+          color: 'rgba(68, 170, 213, 0.1)',
           label: {
             useHTML: true,
-            text: '<img src=' + this.file('icons/rain_heavy.svg') + ' width="50" height="50" >',
+            text: '<img src=' + this.file('icons/rain_heavy.svg') + ' height="' + this.config.iconHeight +'" >',
             style: {
               color: '#fafafa'
             }
@@ -315,10 +277,11 @@ Module.register("MMM-Buienalarm",{
         }, {
           from: 50*(this.config.forecastSteps/60),
           to: 200*(this.config.forecastSteps/60),
-          color: 'rgba(68, 170, 213, 0.8)',
+          color: '#000',
+          //borderColor: 'rgba(68, 170, 213, 0.4)',
           label: {
             useHTML: true,
-            text: '<img src=' + this.file('icons/rain_heavy.svg') + ' width="50" height="50" >',
+            text: '<img src=' + this.file('icons/rain_heavy.svg') + ' height="' + this.config.iconHeight +'" >',
             style: {
               color: '#fafafa'
             }
